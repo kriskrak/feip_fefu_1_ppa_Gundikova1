@@ -80,10 +80,11 @@ Build → Make Project
 
 ```powershell
 .\gradlew.bat assembleDebug
-
+```
 Для запуска unit-тестов:
+```
 .\gradlew.bat test
-
+```
 Для проверки ktlint:
 .\gradlew.bat ktlintCheck
-
+```text

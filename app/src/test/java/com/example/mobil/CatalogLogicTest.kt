@@ -5,9 +5,7 @@ import com.example.mobil.model.CatalogData
 import com.example.mobil.model.Category
 import com.example.mobil.model.Product
 import com.example.mobil.model.ProductSize
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert
 import org.junit.Test
 
 class CatalogLogicTest {
@@ -69,7 +67,7 @@ class CatalogLogicTest {
                 catalog
             )
 
-        assertEquals(
+        Assert.assertEquals(
             listOf(
                 newJeans,
                 newShirt
@@ -87,7 +85,7 @@ class CatalogLogicTest {
                 catalog
             )
 
-        assertEquals(
+        Assert.assertEquals(
             listOf(
                 newJeans,
                 oldJeans
@@ -105,7 +103,7 @@ class CatalogLogicTest {
                 catalog
             )
 
-        assertTrue(
+        Assert.assertTrue(
             result.isEmpty()
         )
     }
@@ -113,7 +111,7 @@ class CatalogLogicTest {
     @Test
     fun priceIsFormattedInRubles() {
 
-        assertEquals(
+        Assert.assertEquals(
             "12 500 ₽",
             CatalogLogic.formatPrice(
                 1_250_000
@@ -124,7 +122,7 @@ class CatalogLogicTest {
     @Test
     fun totalPriceUsesQuantity() {
 
-        assertEquals(
+        Assert.assertEquals(
             300_000,
             CatalogLogic.calculateTotal(
                 priceInKopecks = 100_000,
@@ -136,7 +134,7 @@ class CatalogLogicTest {
     @Test
     fun blankNameIsInvalid() {
 
-        assertFalse(
+        Assert.assertFalse(
             CatalogLogic.isValidName(
                 "   "
             )
@@ -146,7 +144,7 @@ class CatalogLogicTest {
     @Test
     fun nonBlankNameIsValid() {
 
-        assertTrue(
+        Assert.assertTrue(
             CatalogLogic.isValidName(
                 "Анна"
             )
@@ -156,7 +154,7 @@ class CatalogLogicTest {
     @Test
     fun invalidEmailIsRejected() {
 
-        assertFalse(
+        Assert.assertFalse(
             CatalogLogic.isSimpleEmailValid(
                 "abc"
             )
@@ -166,7 +164,7 @@ class CatalogLogicTest {
     @Test
     fun validEmailIsAccepted() {
 
-        assertTrue(
+        Assert.assertTrue(
             CatalogLogic.isSimpleEmailValid(
                 "test@mail.ru"
             )

@@ -40,9 +40,15 @@ object CatalogLogic {
         val rubles =
             priceInKopecks / 100
 
-        return "%,d ₽"
-            .format(rubles)
-            .replace(',', ' ')
+        val formatted =
+            rubles
+                .toString()
+                .reversed()
+                .chunked(3)
+                .joinToString(" ")
+                .reversed()
+
+        return "$formatted ₽"
     }
 
     fun calculateTotal(
