@@ -71,20 +71,24 @@ Room используется для хранения кэша каталога 
 
 Минимальная версия Android: API 24.
 
-После этого проект можно собрать через:
-
 Через Android Studio:
+
 Build → Make Project
 
-или
+Или через терминал:
 
 ```powershell
 .\gradlew.bat assembleDebug
 ```
+
 Для запуска unit-тестов:
-```
+
+```powershell
 .\gradlew.bat test
 ```
+
 Для проверки ktlint:
+
+```powershell
 .\gradlew.bat ktlintCheck
-```text
+```
