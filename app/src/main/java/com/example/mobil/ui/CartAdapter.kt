@@ -10,8 +10,9 @@ import com.bumptech.glide.Glide
 import com.example.mobil.R
 import com.example.mobil.model.CartItem
 
-class CartAdapter(private val cartItems: List<CartItem>) :
-    RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
+class CartAdapter(
+    private val cartItems: List<CartItem>
+) : RecyclerView.Adapter<CartAdapter.CartViewHolder>() {
 
     class CartViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.cartItemImage)
@@ -21,29 +22,46 @@ class CartAdapter(private val cartItems: List<CartItem>) :
         val quantity: TextView = view.findViewById(R.id.cartItemQuantity)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CartViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): CartViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.cart_item, parent, false)
+
         return CartViewHolder(view)
     }
 
     override fun getItemCount(): Int = cartItems.size
 
-    override fun onBindViewHolder(holder: CartViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: CartViewHolder,
+        position: Int
+    ) {
         val cartItem = cartItems[position]
 
-        holder.title.text = cartItem.product.title
-        holder.price.text = "Цена: ${cartItem.product.price} ₽"
-        holder.quantity.text = "Количество: ${cartItem.quantity}"
+        holder.title.text = cartItem.product.name
 
-        if (cartItem.size != null) {
-            holder.size.text = "Размер: ${cartItem.size}"
-        } else {
-            holder.size.text = "Размер: —"
-        }
+        val totalPriceInKopecks =
+            cartItem.product.priceInKopecks * cartItem.quantity
+
+        val totalPriceInRubles = totalPriceInKopecks / 100.0
+
+        holder.price.text =
+            String.format("Цена: %,.2f ₽", totalPriceInRubles)
+
+        holder.quantity.text =
+            "Количество: ${cartItem.quantity}"
+
+        holder.size.text =
+            if (cartItem.size != null) {
+                "Размер: ${cartItem.size}"
+            } else {
+                "Размер: —"
+            }
 
         Glide.with(holder.itemView.context)
-            .load(cartItem.product.image)
+            .load(cartItem.product.imageUrl)
             .into(holder.image)
     }
 }

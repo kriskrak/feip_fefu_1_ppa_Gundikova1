@@ -11,8 +11,9 @@ import com.bumptech.glide.Glide
 import com.example.mobil.R
 import com.example.mobil.model.Product
 
-class ProductAdapter(private val products: List<Product>) :
-    RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+class ProductAdapter(
+    private val products: List<Product>
+) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     class ProductViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val image: ImageView = view.findViewById(R.id.productImage)
@@ -20,32 +21,49 @@ class ProductAdapter(private val products: List<Product>) :
         val price: TextView = view.findViewById(R.id.productprice)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ProductViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.product_item, parent, false)
+
         return ProductViewHolder(view)
     }
 
     override fun getItemCount(): Int = products.size
 
-    override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
+    override fun onBindViewHolder(
+        holder: ProductViewHolder,
+        position: Int
+    ) {
         val product = products[position]
 
-        holder.title.text = product.title
-        holder.price.text = "${product.price}₽"
+        holder.title.text = product.name
+
+        val priceInRubles = product.priceInKopecks / 100
+
+        holder.price.text =
+            "%,d ₽".format(priceInRubles)
+                .replace(',', ' ')
 
         Glide.with(holder.itemView.context)
-            .load(product.image)
+            .load(product.imageUrl)
             .into(holder.image)
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(holder.itemView.context, ProductActivity::class.java)
-            intent.putExtra("category", product.category)
+            val intent = Intent(
+                holder.itemView.context,
+                ProductActivity::class.java
+            )
+
             intent.putExtra("id", product.id)
-            intent.putExtra("title", product.title)
-            intent.putExtra("price", product.price)
-            intent.putExtra("description", product.description)
-            intent.putExtra("image", product.image)
+            intent.putExtra("name", product.name)
+            intent.putExtra("priceInKopecks", product.priceInKopecks)
+            intent.putExtra("longDescription", product.longDescription)
+            intent.putExtra("imageUrl", product.imageUrl)
+            intent.putExtra("categoryId", product.categoryId)
+
             holder.itemView.context.startActivity(intent)
         }
     }

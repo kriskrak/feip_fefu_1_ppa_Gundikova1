@@ -28,57 +28,61 @@ class ProductActivity : AppCompatActivity() {
         val sizeLabel = findViewById<TextView>(R.id.sizeLabel)
         val sizeSpinner = findViewById<Spinner>(R.id.sizeSpinner)
 
-        val productId = intent.getIntExtra("id", 0)
-        val productTitle = intent.getStringExtra("title") ?: ""
-        val productPrice = intent.getDoubleExtra("price", 0.0)
-        val productDescription = intent.getStringExtra("description") ?: ""
-        val productImage = intent.getStringExtra("image") ?: ""
-        val productCategory = intent.getStringExtra("category") ?: ""
+        val productId = intent.getStringExtra("id") ?: ""
+        val productName = intent.getStringExtra("name") ?: ""
+        val productPriceInKopecks = intent.getIntExtra("priceInKopecks", 0)
+        val productDescription = intent.getStringExtra("longDescription") ?: ""
+        val productImageUrl = intent.getStringExtra("imageUrl") ?: ""
+        val productCategoryId = intent.getStringExtra("categoryId") ?: ""
 
-        title.text = productTitle
-        price.text = "$productPrice ₽"
+        title.text = productName
+        price.text = String.format("%,.2f ₽", productPriceInKopecks / 100.0)
         description.text = productDescription
 
         Glide.with(this)
-            .load(productImage)
+            .load(productImageUrl)
             .into(image)
 
-        val currentProduct = Product(
-            productId,
-            productTitle,
-            productPrice,
-            productDescription,
-            productImage,
-            productCategory
-        )
-
         val sizes = listOf("XS", "S", "M", "L", "XL")
+
         val spinnerAdapter = ArrayAdapter(
             this,
             android.R.layout.simple_spinner_item,
             sizes
         )
-        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+
+        spinnerAdapter.setDropDownViewResource(
+            android.R.layout.simple_spinner_dropdown_item
+        )
+
         sizeSpinner.adapter = spinnerAdapter
 
-        val isClothing = productCategory == "clothing"
+        val currentProduct = Product(
+            id = productId,
+            name = productName,
+            shortDescription = "",
+            longDescription = productDescription,
+            priceInKopecks = productPriceInKopecks,
+            imageUrl = productImageUrl,
+            tags = emptyList(),
+            sizes = emptyList(),
+            categoryId = productCategoryId,
+            material = "",
+            weight = "",
+            season = "",
+            countryOfOrigin = ""
+        )
 
-        if (isClothing) {
-            sizeLabel.visibility = View.VISIBLE
-            sizeSpinner.visibility = View.VISIBLE
-        } else {
-            sizeLabel.visibility = View.GONE
-            sizeSpinner.visibility = View.GONE
-        }
+        sizeLabel.visibility = View.VISIBLE
+        sizeSpinner.visibility = View.VISIBLE
 
         addToCartButton.setOnClickListener {
-            val selectedSize = if (isClothing) {
-                sizeSpinner.selectedItem.toString()
-            } else {
-                null
-            }
+            val selectedSize = sizeSpinner.selectedItem.toString()
 
-            CartManager.addToCart(currentProduct, selectedSize)
+            CartManager.addToCart(
+                currentProduct,
+                selectedSize
+            )
 
             Toast.makeText(
                 this,
