@@ -15,7 +15,6 @@
         android:theme="@style/Theme.Mobil">
 
         <activity android:name=".ui.CartActivity" />
-        <activity android:name=".ui.ProductActivity" />
 
         <activity
             android:name=".ui.MainActivity"

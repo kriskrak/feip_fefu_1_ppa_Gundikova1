@@ -1,138 +1,221 @@
 package com.example.mobil.ui
 
-import androidx.lifecycle.ViewModelProvider
-import com.example.mobil.viewmodel.CatalogViewModel
-import com.example.mobil.viewmodel.CatalogViewModelFactory
-import android.view.View
-import android.widget.ProgressBar
-import android.widget.LinearLayout
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mobil.R
 import com.example.mobil.data.CatalogRepository
-
+import com.example.mobil.model.CatalogData
+import com.example.mobil.model.Product
+import com.example.mobil.viewmodel.CatalogViewModel
+import com.example.mobil.viewmodel.CatalogViewModelFactory
 
 class MainActivity : AppCompatActivity() {
+
     private var selectedCategory = "Новинки"
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(
+        savedInstanceState: Bundle?
+    ) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         selectedCategory =
-            savedInstanceState?.getString("selectedCategory") ?: "Новинки"
+            savedInstanceState
+                ?.getString(KEY_SELECTED_CATEGORY)
+                ?: "Новинки"
 
+        val recyclerView =
+            findViewById<RecyclerView>(R.id.recyclerView)
 
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
-        val openCartButton = findViewById<Button>(R.id.openCartButton)
+        val openCartButton =
+            findViewById<Button>(R.id.openCartButton)
 
-        val categoryContainer = findViewById<LinearLayout>(R.id.categoryContainer)
-        val progressBar = findViewById<ProgressBar>(R.id.progressBar)
-        val errorContainer = findViewById<LinearLayout>(R.id.errorContainer)
-        val retryButton = findViewById<Button>(R.id.retryButton)
+        val categoryContainer =
+            findViewById<LinearLayout>(R.id.categoryContainer)
 
-        val repository = CatalogRepository(this)
+        val progressBar =
+            findViewById<ProgressBar>(R.id.progressBar)
 
-        val viewModel = ViewModelProvider(
-            this,
-            CatalogViewModelFactory(repository)
-        )[CatalogViewModel::class.java]
+        val errorContainer =
+            findViewById<LinearLayout>(R.id.errorContainer)
 
-        fun loadCatalog() {
-            viewModel.loadCatalog()
-        }
+        val retryButton =
+            findViewById<Button>(R.id.retryButton)
+
+        val repository =
+            CatalogRepository(this)
+
+        val viewModel =
+            ViewModelProvider(
+                this,
+                CatalogViewModelFactory(repository)
+            )[CatalogViewModel::class.java]
+
+        recyclerView.layoutManager =
+            GridLayoutManager(this, 2)
 
         viewModel.isLoading.observe(this) { isLoading ->
             progressBar.visibility =
-                if (isLoading) View.VISIBLE else View.GONE
+                if (isLoading) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
         }
 
         viewModel.isError.observe(this) { isError ->
             errorContainer.visibility =
-                if (isError) View.VISIBLE else View.GONE
+                if (isError) {
+                    View.VISIBLE
+                } else {
+                    View.GONE
+                }
 
             recyclerView.visibility =
-                if (isError) View.GONE else View.VISIBLE
+                if (isError) {
+                    View.GONE
+                } else {
+                    View.VISIBLE
+                }
         }
 
         viewModel.catalog.observe(this) { catalog ->
-            categoryContainer.removeAllViews()
-
-            val categories = buildList {
-                add("Новинки")
-                addAll(catalog.categories.map { it.name })
-            }
-
-            recyclerView.layoutManager =
-                androidx.recyclerview.widget.GridLayoutManager(this, 2)
-
-            var currentAdapter = ProductAdapter(
-                filterProducts(selectedCategory, catalog)
+            showCatalog(
+                catalog = catalog,
+                recyclerView = recyclerView,
+                categoryContainer = categoryContainer
             )
-
-            recyclerView.adapter = currentAdapter
-
-            categories.forEach { categoryName ->
-                val button = Button(this)
-
-                button.text = categoryName
-                button.isAllCaps = false
-
-                button.setOnClickListener {
-                    selectedCategory = categoryName
-
-                    val filteredProducts = filterProducts(
-                        categoryName,
-                        catalog
-                    )
-
-                    currentAdapter = ProductAdapter(filteredProducts)
-                    recyclerView.adapter = currentAdapter
-                }
-
-                categoryContainer.addView(button)
-            }
         }
 
         retryButton.setOnClickListener {
-            loadCatalog()
+            viewModel.loadCatalog()
         }
 
-        loadCatalog()
-
-
         openCartButton.setOnClickListener {
-            startActivity(Intent(this, CartActivity::class.java))
+            startActivity(
+                Intent(
+                    this,
+                    CartActivity::class.java
+                )
+            )
+        }
+
+        viewModel.loadCatalog()
+    }
+
+    private fun showCatalog(
+        catalog: CatalogData,
+        recyclerView: RecyclerView,
+        categoryContainer: LinearLayout
+    ) {
+
+        categoryContainer.removeAllViews()
+
+        val categories = buildList {
+            add("Новинки")
+            addAll(
+                catalog.categories.map {
+                    it.name
+                }
+            )
+        }
+
+        fun showProducts(
+            products: List<Product>
+        ) {
+            recyclerView.adapter =
+                ProductAdapter(products) { product ->
+
+                    ProductDetailsBottomSheet
+                        .newInstance(product)
+                        .show(
+                            supportFragmentManager,
+                            "ProductDetails"
+                        )
+                }
+        }
+
+        showProducts(
+            filterProducts(
+                selectedCategory,
+                catalog
+            )
+        )
+
+        categories.forEach { categoryName ->
+
+            val button = Button(this)
+
+            button.text = categoryName
+            button.isAllCaps = false
+
+            button.setOnClickListener {
+                selectedCategory = categoryName
+
+                showProducts(
+                    filterProducts(
+                        categoryName,
+                        catalog
+                    )
+                )
+            }
+
+            categoryContainer.addView(button)
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
+    override fun onSaveInstanceState(
+        outState: Bundle
+    ) {
         super.onSaveInstanceState(outState)
-        outState.putString("selectedCategory", selectedCategory)
+
+        outState.putString(
+            KEY_SELECTED_CATEGORY,
+            selectedCategory
+        )
     }
 
     private fun filterProducts(
         categoryName: String,
-        catalog: com.example.mobil.model.CatalogData
-    ): List<com.example.mobil.model.Product> {
+        catalog: CatalogData
+    ): List<Product> {
 
-        return if (categoryName == "Новинки") {
+        return if (
+            categoryName == "Новинки"
+        ) {
+
             catalog.items.filter { product ->
                 "New" in product.tags
             }
+
         } else {
-            val category = catalog.categories.find { it.name == categoryName }
+
+            val category =
+                catalog.categories.find {
+                    it.name == categoryName
+                }
 
             if (category == null) {
                 emptyList()
             } else {
                 catalog.items.filter { product ->
-                    product.categoryId == category.id
+                    product.categoryId ==
+                            category.id
                 }
             }
         }
     }
 
+    companion object {
+        private const val KEY_SELECTED_CATEGORY =
+            "selectedCategory"
+    }
 }
