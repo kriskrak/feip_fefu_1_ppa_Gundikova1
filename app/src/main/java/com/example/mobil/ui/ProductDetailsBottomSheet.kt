@@ -20,6 +20,10 @@ import com.example.mobil.R
 import com.example.mobil.model.Product
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.google.gson.Gson
+import androidx.lifecycle.lifecycleScope
+import com.example.mobil.data.AppDatabase
+import com.example.mobil.data.CartRepository
+import kotlinx.coroutines.launch
 
 class ProductDetailsBottomSheet : BottomSheetDialogFragment() {
 
@@ -101,16 +105,40 @@ class ProductDetailsBottomSheet : BottomSheetDialogFragment() {
         }
 
         addToCartButton.setOnClickListener {
-            if (selectedSizeId == null) {
+
+            val sizeId = selectedSizeId
+
+            if (sizeId == null) {
+
                 Toast.makeText(
                     requireContext(),
                     "Выберите размер",
                     Toast.LENGTH_SHORT
                 ).show()
-            } else {
+
+                return@setOnClickListener
+            }
+
+            val database =
+                AppDatabase.getInstance(
+                    requireContext()
+                )
+
+            val cartRepository =
+                CartRepository(
+                    database.cartDao()
+                )
+
+            viewLifecycleOwner.lifecycleScope.launch {
+
+                cartRepository.add(
+                    productId = product.id,
+                    sizeId = sizeId
+                )
+
                 Toast.makeText(
                     requireContext(),
-                    "Добавление в корзину реализуем в блоке 5",
+                    "Товар добавлен в корзину",
                     Toast.LENGTH_SHORT
                 ).show()
             }

@@ -19,6 +19,10 @@ import com.example.mobil.model.Product
 import com.example.mobil.viewmodel.CatalogViewModel
 import com.example.mobil.viewmodel.CatalogViewModelFactory
 import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.lifecycleScope
+import com.example.mobil.data.CartRepository
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -69,6 +73,11 @@ class MainActivity : AppCompatActivity() {
         val database =
             AppDatabase.getInstance(
                 applicationContext
+            )
+
+        val cartRepository =
+            CartRepository(
+                database.cartDao()
             )
 
         val repository =
@@ -146,6 +155,20 @@ class MainActivity : AppCompatActivity() {
             viewModel.loadCatalog()
         }
 
+        lifecycleScope.launch {
+
+            cartRepository
+                .observeTotalCount()
+                .collectLatest { count ->
+
+                    openCartButton.text =
+                        if (count > 0) {
+                            "Корзина ($count)"
+                        } else {
+                            "Корзина"
+                        }
+                }
+        }
         openCartButton.setOnClickListener {
 
             startActivity(
@@ -158,6 +181,7 @@ class MainActivity : AppCompatActivity() {
 
         viewModel.loadCatalog()
     }
+
 
     private fun showCatalog(
         catalog: CatalogData,
